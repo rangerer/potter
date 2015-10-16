@@ -1,62 +1,35 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
+#!/usr/bin/python
 
-import collections
+from itertools import combinations
 
-
-def potter_level(books, level):
-   # computes price for books
-   # when only applying discounts up to level level
-   discount = [1, 0.95, 0.9, 0.8, 0.75]
-   
-   mapping = collections.Counter(books)
-   
-   biggest_set = get_biggest_set(mapping)
-
-   if len(mapping.keys()) == len(books) == level:
-     return len(books)* 8 * discount[level - 1]
-   elif len(mapping.keys()) == len(books)-1:
-     diff = len(books) - len(mapping.keys())
-     return discount[len(mapping.keys())-1] * 8 * (len(books)-diff) + 8*diff
-   elif len(mapping.keys()) > level and level > 1:
-     return 33.6
-   else:
-     return len(books)*8
-
-
-def get_biggest_set(mapping):
-  biggest_set = 0
-
-  for k, v in mapping.items():
-    if (v > 0):
-      biggest_set += 1
-      
-  return biggest_set
-
+prices = {
+    1: 8,
+    2: 15.2,
+    3: 21.6,
+    4: 25.6,
+    5: 30,
+}
 
 def potter(books):
-    if len(set(books)) <= 1:
-        return 8 * len(books)
+    items = set(books)
+    final = len(books) * 8
 
-    mapping = collections.Counter(books)
-    least_amount = min(mapping.values())
-    
-    if len(set(books))==2:
-        return 8*2*.95
-    elif len(set(books)) == 3 and len(books) == 3:
-        return 8*3*.9
-    elif len(set(books)) == 4 and len(books) == 4:
-        return 8*4*.8
-    elif len(set(books)) == 5:
-        return 30
-    
-    
+    for amount in range(1,len(items)+1):
+        for combination in combinations(items, amount):
+            remainder = books[:]
+            for x in combination:
+                remainder.remove(x)
+            price = prices[amount] + potter(remainder)
+            if price < final:
+                final = price
 
-    if [1,2,3,3] == books:
-        return 29.6
-    price = 8 * len(books)
-    return price
+    return final
 
-if __name__ == "__main__":
-    import nose
-    nose.main()
+if __name__ == '__main__':
+    assert potter([]) == 0
+    assert potter([1]) == 8
+    assert potter([1, 2]) == 15.2
+    assert potter([1, 2, 3]) == 21.6
+    assert potter([1, 2, 3, 4]) == 25.6
+    assert potter([1, 2, 3, 4, 5]) == 30
+    assert potter([1, 2, 3, 4, 5, 1, 2, 3]) == 51.2
